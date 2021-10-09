@@ -1,12 +1,6 @@
 from flask_login import LoginManager, AnonymousUserMixin
 from werkzeug.security import check_password_hash
-from database import (
-    UserModel,
-    DatasetModel,
-    CategoryModel,
-    AnnotationModel,
-    ImageModel
-)
+from database import UserModel, DatasetModel, CategoryModel, AnnotationModel, ImageModel
 
 login_manager = LoginManager()
 
@@ -49,7 +43,7 @@ class AnonymousUser(AnonymousUserMixin):
             "username": self.username,
             "name": self.name,
             "is_admin": self.is_admin,
-            "anonymous": True
+            "anonymous": True,
         }
 
     def can_edit(self, model):
@@ -75,7 +69,7 @@ def load_user(user_id):
 
 @login_manager.unauthorized_handler
 def unauthorized():
-    return {'success': False, 'message': 'Authorization required'}, 401
+    return {"success": False, "message": "Authorization required"}, 401
 
 
 @login_manager.request_loader

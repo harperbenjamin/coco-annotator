@@ -1,20 +1,17 @@
 import eventlet
+
 eventlet.monkey_patch(thread=False)
 
 import sys
 import workers
 
 from config import Config
-from database import (
-    connect_mongo,
-    ImageModel,
-    create_from_json
-)
+from database import connect_mongo, ImageModel, create_from_json
 
 from flask import Flask
 from flask_cors import CORS
 from flask_socketio import SocketIO
-from werkzeug.contrib.fixers import ProxyFix
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 from celery import Celery
 
@@ -31,7 +28,7 @@ import time
 import os
 
 
-connect_mongo('webserver')
+connect_mongo("webserver")
 
 
 def create_app():
@@ -39,9 +36,7 @@ def create_app():
     if Config.FILE_WATCHER:
         run_watcher()
 
-    flask = Flask(__name__,
-                  static_url_path='',
-                  static_folder='../dist')
+    flask = Flask(__name__, static_url_path="", static_folder="../dist")
 
     flask.config.from_object(Config)
 
@@ -62,20 +57,20 @@ def create_app():
 
 app = create_app()
 
-logger = logging.getLogger('gunicorn.error')
+logger = logging.getLogger("gunicorn.error")
 app.logger.handlers = logger.handlers
 app.logger.setLevel(logger.level)
-    
+
 
 if Config.INITIALIZE_FROM_FILE:
     create_from_json(Config.INITIALIZE_FROM_FILE)
 
 
-@app.route('/', defaults={'path': ''})
-@app.route('/<path:path>')
+@app.route("/", defaults={"path": ""})
+@app.route("/<path:path>")
 def index(path):
-    
-    if app.debug:
-        return requests.get('http://frontend:8080/{}'.format(path)).text
 
-    return app.send_static_file('index.html')
+    if app.debug:
+        return requests.get("http://frontend:8080/{}".format(path)).text
+
+    return app.send_static_file("index.html")

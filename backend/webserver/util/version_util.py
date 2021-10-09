@@ -10,7 +10,9 @@ LATEST_VERSION = ""
 
 
 def get_tag():
-    result = subprocess.run(["git", "describe", "--abbrev=0", "--tags"], stdout=subprocess.PIPE)
+    result = subprocess.run(
+        ["git", "describe", "--abbrev=0", "--tags"], stdout=subprocess.PIPE
+    )
     return str(result.stdout.decode("utf-8")).strip()
 
 
@@ -20,12 +22,13 @@ def get_current():
 
 
 def get_branch():
-    result = subprocess.run(["git", "rev-parse", "--abbrev-ref", "HEAD"], stdout=subprocess.PIPE)
+    result = subprocess.run(
+        ["git", "rev-parse", "--abbrev-ref", "HEAD"], stdout=subprocess.PIPE
+    )
     return str(result.stdout.decode("utf-8")).strip()
 
 
 class VersionControl:
-
     def __init__(self):
         self.valid = True
 
@@ -49,7 +52,7 @@ class VersionControl:
             self.valid = False
             return ""
 
-        return r.json().get('sha')
+        return r.json().get("sha")
 
     def get_commits_behind(self):
 
@@ -62,4 +65,4 @@ class VersionControl:
             self.valid = False
             return 0
 
-        return r.json().get('behind_by')
+        return r.json().get("behind_by")

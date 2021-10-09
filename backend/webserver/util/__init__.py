@@ -1,5 +1,3 @@
-
-
 import time
 import logging
 
@@ -10,7 +8,7 @@ def profile(func):
         result = func(*args, **kwargs)
         diff = time.time() - started_at
         if isinstance(result, dict):
-            result['time_ms'] = int(diff * 1000)
+            result["time_ms"] = int(diff * 1000)
         return result
 
     return wrap

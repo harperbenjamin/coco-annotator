@@ -25,3 +25,5 @@ h5py
 imgaug
 IPython[all]
 jupyter
+tensorflow==2.6.0
+tensorflow-hub==0.12.0

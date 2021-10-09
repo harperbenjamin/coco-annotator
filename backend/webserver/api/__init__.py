@@ -17,13 +17,9 @@ from .info import api as ns_info
 from config import Config
 
 # Create /api/ space
-blueprint = Blueprint('api', __name__, url_prefix='/api')
+blueprint = Blueprint("api", __name__, url_prefix="/api")
 
-api = Api(
-    blueprint,
-    title=Config.NAME,
-    version=Config.VERSION,
-)
+api = Api(blueprint, title=Config.NAME, version=Config.VERSION,)
 
 # Remove default namespace
 api.namespaces.pop(0)
@@ -41,4 +37,3 @@ api.add_namespace(ns_undo)
 api.add_namespace(ns_models)
 api.add_namespace(ns_admin)
 api.add_namespace(ns_annotator)
-

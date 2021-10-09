@@ -1,4 +1,3 @@
-
 class Pagination:
 
     start = 0
@@ -35,6 +34,5 @@ class Pagination:
             "pages": self.pages,
             "page": self.current_page,
             "total": self.length,
-            "showing": self.end - self.start
+            "showing": self.end - self.start,
         }
-

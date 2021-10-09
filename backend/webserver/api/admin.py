@@ -5,27 +5,26 @@ from werkzeug.security import generate_password_hash
 from database import UserModel
 from ..util.query_util import fix_ids
 
-api = Namespace('admin', description='Admin related operations')
+api = Namespace("admin", description="Admin related operations")
 
 users = reqparse.RequestParser()
-users.add_argument('limit', type=int, default=50)
-users.add_argument('page', type=int, default=1)
+users.add_argument("limit", type=int, default=50)
+users.add_argument("page", type=int, default=1)
 
 create_user = reqparse.RequestParser()
-create_user.add_argument('name', default="", location='json')
-create_user.add_argument('password', default="", location='json')
+create_user.add_argument("name", default="", location="json")
+create_user.add_argument("password", default="", location="json")
 
 register = reqparse.RequestParser()
-register.add_argument('username', required=True, location='json')
-register.add_argument('password', required=True, location='json')
-register.add_argument('email', location='json')
-register.add_argument('name', location='json')
-register.add_argument('isAdmin', type=bool, default=False, location='json')
+register.add_argument("username", required=True, location="json")
+register.add_argument("password", required=True, location="json")
+register.add_argument("email", location="json")
+register.add_argument("name", location="json")
+register.add_argument("isAdmin", type=bool, default=False, location="json")
 
 
-@api.route('/users')
+@api.route("/users")
 class Users(Resource):
-
     @api.expect(users)
     @login_required
     def get(self):
@@ -35,27 +34,30 @@ class Users(Resource):
             return {"success": False, "message": "Access denied"}, 401
 
         args = users.parse_args()
-        per_page = args['limit']
-        page = args['page']-1
+        per_page = args["limit"]
+        page = args["page"] - 1
 
         user_model = UserModel.objects
         total = user_model.count()
-        pages = int(total/per_page) + 1
+        pages = int(total / per_page) + 1
 
-        user_model = user_model.skip(page*per_page).limit(per_page).exclude("preferences", "password")
+        user_model = (
+            user_model.skip(page * per_page)
+            .limit(per_page)
+            .exclude("preferences", "password")
+        )
 
         return {
             "total": total,
             "pages": pages,
             "page": page,
             "per_page": per_page,
-            "users": fix_ids(user_model.all())
+            "users": fix_ids(user_model.all()),
         }
 
 
-@api.route('/user/')
+@api.route("/user/")
 class User(Resource):
-
     @login_required
     @api.expect(register)
     def post(self):
@@ -65,28 +67,27 @@ class User(Resource):
             return {"success": False, "message": "Access denied"}, 401
 
         args = register.parse_args()
-        username = args.get('username')
+        username = args.get("username")
 
         if UserModel.objects(username__iexact=username).first():
-            return {'success': False, 'message': 'Username already exists.'}, 400
+            return {"success": False, "message": "Username already exists."}, 400
 
         user = UserModel()
-        user.username = args.get('username')
-        user.password = generate_password_hash(args.get('password'), method='sha256')
-        user.name = args.get('name', "")
-        user.email = args.get('email', "")
-        user.is_admin = args.get('isAdmin', False)
+        user.username = args.get("username")
+        user.password = generate_password_hash(args.get("password"), method="sha256")
+        user.name = args.get("name", "")
+        user.email = args.get("email", "")
+        user.is_admin = args.get("isAdmin", False)
         user.save()
 
         user_json = fix_ids(current_user)
-        del user_json['password']
+        del user_json["password"]
 
-        return {'success': True, 'user': user_json}
+        return {"success": True, "user": user_json}
 
 
-@api.route('/user/<string:username>')
+@api.route("/user/<string:username>")
 class Username(Resource):
-
     @login_required
     def get(self, username):
         """ Get a users """
@@ -113,13 +114,13 @@ class Username(Resource):
             return {"success": False, "message": "User not found"}, 400
 
         args = create_user.parse_args()
-        name = args.get('name')
+        name = args.get("name")
         if len(name) > 0:
             user.name = name
 
-        password = args.get('password')
+        password = args.get("password")
         if len(password) > 0:
-            user.password = generate_password_hash(password, method='sha256')
+            user.password = generate_password_hash(password, method="sha256")
 
         user.save()
 
@@ -138,4 +139,3 @@ class Username(Resource):
 
         user.delete()
         return {"success": True}
-

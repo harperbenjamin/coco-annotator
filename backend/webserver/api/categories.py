@@ -8,37 +8,33 @@ from database import CategoryModel, AnnotationModel
 
 import datetime
 
-api = Namespace('category', description='Category related operations')
+api = Namespace("category", description="Category related operations")
 
 create_category = reqparse.RequestParser()
-create_category.add_argument('name', required=True, location='json')
-create_category.add_argument('supercategory', location='json')
-create_category.add_argument('color', location='json')
-create_category.add_argument('metadata', type=dict, location='json')
-create_category.add_argument(
-    'keypoint_edges', type=list, default=[], location='json')
-create_category.add_argument(
-    'keypoint_labels', type=list, default=[], location='json')
-create_category.add_argument(
-    'keypoint_colors', type=list, default=[], location='json')
+create_category.add_argument("name", required=True, location="json")
+create_category.add_argument("supercategory", location="json")
+create_category.add_argument("color", location="json")
+create_category.add_argument("metadata", type=dict, location="json")
+create_category.add_argument("keypoint_edges", type=list, default=[], location="json")
+create_category.add_argument("keypoint_labels", type=list, default=[], location="json")
+create_category.add_argument("keypoint_colors", type=list, default=[], location="json")
 
 update_category = reqparse.RequestParser()
-update_category.add_argument('name', required=True, location='json')
-update_category.add_argument('supercategory', location='json')
-update_category.add_argument('color', location='json')
-update_category.add_argument('metadata', type=dict, location='json')
-update_category.add_argument('keypoint_edges', type=list, location='json')
-update_category.add_argument('keypoint_labels', type=list, location='json')
-update_category.add_argument('keypoint_colors', type=list, location='json')
+update_category.add_argument("name", required=True, location="json")
+update_category.add_argument("supercategory", location="json")
+update_category.add_argument("color", location="json")
+update_category.add_argument("metadata", type=dict, location="json")
+update_category.add_argument("keypoint_edges", type=list, location="json")
+update_category.add_argument("keypoint_labels", type=list, location="json")
+update_category.add_argument("keypoint_colors", type=list, location="json")
 
 page_data = reqparse.RequestParser()
-page_data.add_argument('page', default=1, type=int)
-page_data.add_argument('limit', default=20, type=int)
+page_data.add_argument("page", default=1, type=int)
+page_data.add_argument("limit", default=20, type=int)
 
 
-@api.route('/')
+@api.route("/")
 class Category(Resource):
-
     @login_required
     def get(self):
         """ Returns all categories """
@@ -49,13 +45,13 @@ class Category(Resource):
     def post(self):
         """ Creates a category """
         args = create_category.parse_args()
-        name = args.get('name')
-        supercategory = args.get('supercategory')
-        metadata = args.get('metadata', {})
-        color = args.get('color')
-        keypoint_edges = args.get('keypoint_edges')
-        keypoint_labels = args.get('keypoint_labels')
-        keypoint_colors = args.get('keypoint_colors')
+        name = args.get("name")
+        supercategory = args.get("supercategory")
+        metadata = args.get("metadata", {})
+        color = args.get("color")
+        keypoint_edges = args.get("keypoint_edges")
+        keypoint_labels = args.get("keypoint_labels")
+        keypoint_colors = args.get("keypoint_colors")
 
         try:
             category = CategoryModel(
@@ -69,21 +65,25 @@ class Category(Resource):
             )
             category.save()
         except NotUniqueError as e:
-            return {'message': 'Category already exists. Check the undo tab to fully delete the category.'}, 400
+            return (
+                {
+                    "message": "Category already exists. Check the undo tab to fully delete the category."
+                },
+                400,
+            )
 
         return query_util.fix_ids(category)
 
 
-@api.route('/<int:category_id>')
+@api.route("/<int:category_id>")
 class Category(Resource):
-
     @login_required
     def get(self, category_id):
         """ Returns a category by ID """
         category = current_user.categories.filter(id=category_id).first()
 
         if category is None:
-            return {'success': False}, 400
+            return {"success": False}, 400
 
         return query_util.fix_ids(category)
 
@@ -95,11 +95,13 @@ class Category(Resource):
             return {"message": "Invalid image id"}, 400
 
         if not current_user.can_delete(category):
-            return {"message": "You do not have permission to delete this category"}, 403
+            return (
+                {"message": "You do not have permission to delete this category"},
+                403,
+            )
 
-        category.update(set__deleted=True,
-                        set__deleted_date=datetime.datetime.now())
-        return {'success': True}
+        category.update(set__deleted=True, set__deleted_date=datetime.datetime.now())
+        return {"success": True}
 
     @api.expect(update_category)
     @login_required
@@ -113,21 +115,23 @@ class Category(Resource):
             return {"message": "Invalid category id"}, 400
 
         args = update_category.parse_args()
-        name = args.get('name')
-        supercategory = args.get('supercategory', category.supercategory)
-        color = args.get('color', category.color)
-        metadata = args.get('metadata', category.metadata)
-        keypoint_edges = args.get('keypoint_edges', category.keypoint_edges)
-        keypoint_labels = args.get('keypoint_labels', category.keypoint_labels)
-        keypoint_colors = args.get('keypoint_colors', category.keypoint_colors)
+        name = args.get("name")
+        supercategory = args.get("supercategory", category.supercategory)
+        color = args.get("color", category.color)
+        metadata = args.get("metadata", category.metadata)
+        keypoint_edges = args.get("keypoint_edges", category.keypoint_edges)
+        keypoint_labels = args.get("keypoint_labels", category.keypoint_labels)
+        keypoint_colors = args.get("keypoint_colors", category.keypoint_colors)
 
         # check if there is anything to update
-        if category.name == name \
-                and category.supercategory == supercategory \
-                and category.color == color \
-                and category.keypoint_edges == keypoint_edges \
-                and category.keypoint_labels == keypoint_labels \
-                and category.keypoint_colors == keypoint_colors:
+        if (
+            category.name == name
+            and category.supercategory == supercategory
+            and category.color == color
+            and category.keypoint_edges == keypoint_edges
+            and category.keypoint_labels == keypoint_labels
+            and category.keypoint_colors == keypoint_colors
+        ):
             return {"message": "Nothing to update"}, 200
 
         # check if the name is empty
@@ -161,29 +165,28 @@ class Category(Resource):
         return {"success": True}
 
 
-@api.route('/data')
+@api.route("/data")
 class CategoriesData(Resource):
-
     @api.expect(page_data)
     @login_required
     def get(self):
         """ Endpoint called by category viewer client """
         args = page_data.parse_args()
-        limit = args['limit']
-        page = args['page']
+        limit = args["limit"]
+        page = args["page"]
 
         categories = current_user.categories.filter(deleted=False)
 
         pagination = Pagination(categories.count(), limit, page)
-        categories = query_util.fix_ids(
-            categories[pagination.start:pagination.end])
+        categories = query_util.fix_ids(categories[pagination.start : pagination.end])
 
         for category in categories:
-            category['numberAnnotations'] = AnnotationModel.objects(
-                deleted=False, category_id=category.get('id')).count()
+            category["numberAnnotations"] = AnnotationModel.objects(
+                deleted=False, category_id=category.get("id")
+            ).count()
 
         return {
             "pagination": pagination.export(),
             "page": page,
-            "categories": categories
+            "categories": categories,
         }
